@@ -1,0 +1,7 @@
+{
+  "name": "com.daydream.extensionmethods",
+  "version": "0.0.0",
+  "displayName": "Extension Methods",
+  "description": "Extension Methods for C# and Unity classes and types",
+  "rootnamespace": "daydream"
+}
