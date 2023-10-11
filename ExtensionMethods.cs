@@ -235,7 +235,7 @@ public static class ExtensionMethods
         return quaternion * Quaternion.Inverse(divisor);
     }
 
-    public static float StandardizedDistance(this Quaternion rotation, Quaternion targetRotation) => StandardizedDistance(rotation.eulerAngles, targetRotation.eulerAngles)
+    public static float StandardizedDistance(this Quaternion rotation, Quaternion targetRotation) => StandardizedDistance(rotation.eulerAngles, targetRotation.eulerAngles);
 
     public static Quaternion RotationComponentAboutAxis(this Quaternion rotation, Vector3 direction)
     {
@@ -297,6 +297,50 @@ public static class ExtensionMethods
 
         return distance;
     }
+
+//RectTransform
+    public static Bounds BoundsWithChildren(this RectTransform element, List<GameObject> ignoreObjects, Quaternion relativeRotation)
+    {
+        Vector3 min = Vector3.positiveInfinity;
+        Vector3 max = Vector3.negativeInfinity;
+        Vector3[] corners = new Vector3[4];
+
+        element.GetWorldCorners(corners);
+
+        foreach (Vector3 corner in corners)
+        {
+            Vector3 transformedCorner = Quaternion.Inverse(relativeRotation) * (corner - element.position) + element.position;
+            min = Vector3.Min(min, transformedCorner);
+            max = Vector3.Max(max, transformedCorner);
+        }
+
+        foreach (RectTransform child in element.GetComponentsInChildren<RectTransform>())
+        {
+            if (child.gameObject.name.StartsWith("IGNOREBOUNDS") || ignoreObjects.Contains(child.gameObject))
+            {
+                continue;
+            }
+
+            child.GetWorldCorners(corners);
+
+            foreach (Vector3 corner in corners)
+            {
+                Vector3 transformedCorner = Quaternion.Inverse(relativeRotation) * (corner - element.position) + element.position;
+                min = Vector3.Min(min, transformedCorner);
+                max = Vector3.Max(max, transformedCorner);
+            }
+        }
+
+        min -= element.position;
+        max -= element.position;
+
+        Bounds bounds = new Bounds();
+        bounds.SetMinMax(min, max);
+
+        return bounds;
+    }
+
+    public static Bounds BoundsWithChildren(this RectTransform element, List<GameObject> ignoreObjects, Transform relativeTransform) => BoundsWithChildren(element, ignoreObjects, relativeTransform.rotation);
 
 //Rigidbody
     public static Vector3 CalculateForceToReachVelocity(this Rigidbody rigidbody, Vector3 targetVelocity, float deltaTime = 0.01f)
