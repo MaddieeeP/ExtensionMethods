@@ -254,7 +254,7 @@ public static class ExtensionMethods
         return twist;
     }
 
-    public static Vector3 FindClosest(this Quaternion quaternion, List<Quaternion> quaternions)
+    public static int FindClosest(this Quaternion quaternion, List<Quaternion> quaternions)
     {
         float minAngle = float.MaxValue;
 
@@ -270,7 +270,7 @@ public static class ExtensionMethods
             }
         }
 
-        return quaternions[indexOfBest];
+        return indexOfBest;
     }
 
 //GameObject
@@ -299,7 +299,7 @@ public static class ExtensionMethods
     }
 
 //RectTransform
-    public static Bounds BoundsWithChildren(this RectTransform element, List<GameObject> ignoreObjects, Quaternion relativeRotation)
+    public static Bounds GetBoundsWithChildren(this RectTransform element, List<GameObject> ignoreObjects, Quaternion relativeRotation)
     {
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;
@@ -340,7 +340,7 @@ public static class ExtensionMethods
         return bounds;
     }
 
-    public static Bounds BoundsWithChildren(this RectTransform element, List<GameObject> ignoreObjects, Transform relativeTransform) => BoundsWithChildren(element, ignoreObjects, relativeTransform.rotation);
+    public static Bounds GetBoundsWithChildren(this RectTransform element, List<GameObject> ignoreObjects, Transform relativeTransform) => GetBoundsWithChildren(element, ignoreObjects, relativeTransform.rotation);
 
 //Rigidbody
     public static Vector3 CalculateForceToReachVelocity(this Rigidbody rigidbody, Vector3 targetVelocity, float deltaTime = 0.01f)
