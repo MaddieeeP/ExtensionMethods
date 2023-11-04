@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using UnityEngine;
 
 public static class ExtensionMethods
@@ -55,6 +57,13 @@ public static class ExtensionMethods
         list[newIndex] = temp;
     }
 
+    public static void Swap<T>(IList<T> list, int indexA, int indexB)
+    {
+        T temp = list[indexA];
+        list[indexA] = list[indexB];
+        list[indexB] = temp;
+    }
+
     public static void SetValueBelowIndex<T>(this List<T> list, T value, int index)
     {
         while (index < 0)
@@ -91,7 +100,40 @@ public static class ExtensionMethods
         }
     }
 
+//Vector2
+    public static Vector2 ChangeValue(this Vector2 vector, int index, float value)
+    {
+        if (index == 0)
+        {
+            vector = new Vector2(value, vector.y);
+        }
+        else
+        {
+            vector = new Vector2(vector.x, value);
+        }
+
+        return vector;
+    }
+
 //Vector3
+    public static Vector3 ChangeValue(this Vector3 vector, int index, float value)
+    {
+        if (index == 0)
+        {
+            vector = new Vector3(value, vector.y, vector.z);
+        }
+        else if (index == 1)
+        {
+            vector = new Vector3(vector.x, value, vector.z);
+        }
+        else
+        {
+            vector = new Vector3(vector.x, vector.y, value);
+        }
+
+        return vector;
+    }
+
     public static Vector3 StandardizeRotation(this Vector3 rotation)
     {
         while (rotation.x <= -180f)
@@ -276,11 +318,13 @@ public static class ExtensionMethods
 //GameObject
     public static bool HasComponent<T>(this GameObject obj)
     {
-        return (obj.GetComponent<T>() as Component) != null;
+        return (obj.GetComponent<T>() as UnityEngine.Component) != null;
     }
 
+    public static void DestroyAllChildren(this GameObject obj) => obj.transform.DestroyAllChildren();
+
 //Transform
-    public static bool HasComponent<T>(this Transform transform) => transform.gameObject.HasComponent<T>();
+public static bool HasComponent<T>(this Transform transform) => transform.gameObject.HasComponent<T>();
 
     public static float ShortestDistanceToVertex(this Transform transform, Vector3 position)
     {
@@ -298,8 +342,38 @@ public static class ExtensionMethods
         return distance;
     }
 
+    public static void DestroyAllChildren(this Transform transform)
+    {
+        EM.DestroyAllChildren(transform);
+    }
+
+//List<Transform>
+    public static List<Vector3> GetPositions(this List<Transform> list)
+    {
+        List<Vector3> positions = new List<Vector3>();
+
+        foreach (Transform transform in list) 
+        { 
+            positions.Add(transform.position);
+        }
+
+        return positions;
+    }
+
+    public static List<Quaternion> GetRotations(this List<Transform> list)
+    {
+        List<Quaternion> rotations = new List<Quaternion>();
+
+        foreach (Transform transform in list)
+        {
+            rotations.Add(transform.rotation);
+        }
+
+        return rotations;
+    }
+
 //RectTransform
-    public static Bounds GetBoundsWithChildren(this RectTransform element, List<GameObject> ignoreObjects, Quaternion relativeRotation)
+    public static Bounds GetBounds(this RectTransform element, Quaternion relativeRotation)
     {
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;
@@ -312,6 +386,33 @@ public static class ExtensionMethods
             Vector3 transformedCorner = Quaternion.Inverse(relativeRotation) * (corner - element.position) + element.position;
             min = Vector3.Min(min, transformedCorner);
             max = Vector3.Max(max, transformedCorner);
+        }
+
+        min -= element.position;
+        max -= element.position;
+
+        Bounds bounds = new Bounds();
+        bounds.SetMinMax(min, max);
+
+        return bounds;
+    }
+
+    public static Bounds GetBoundsWithChildren(this RectTransform element, List<GameObject> ignoreObjects, Quaternion relativeRotation)
+    {
+        Vector3 min = Vector3.positiveInfinity;
+        Vector3 max = Vector3.negativeInfinity;
+        Vector3[] corners = new Vector3[4];
+
+        if (!ignoreObjects.Contains(element.gameObject))
+        {
+            element.GetWorldCorners(corners);
+
+            foreach (Vector3 corner in corners)
+            {
+                Vector3 transformedCorner = Quaternion.Inverse(relativeRotation) * (corner - element.position) + element.position;
+                min = Vector3.Min(min, transformedCorner);
+                max = Vector3.Max(max, transformedCorner);
+            }
         }
 
         foreach (RectTransform child in element.GetComponentsInChildren<RectTransform>())
@@ -331,6 +432,15 @@ public static class ExtensionMethods
             }
         }
 
+        if (min == Vector3.positiveInfinity)
+        {
+            min = new Vector3(0f, 0f, 0f);
+        }
+        if (max == Vector3.negativeInfinity)
+        {
+            max = new Vector3(0f, 0f, 0f);
+        }
+
         min -= element.position;
         max -= element.position;
 
@@ -339,8 +449,6 @@ public static class ExtensionMethods
 
         return bounds;
     }
-
-    public static Bounds GetBoundsWithChildren(this RectTransform element, List<GameObject> ignoreObjects, Transform relativeTransform) => GetBoundsWithChildren(element, ignoreObjects, relativeTransform.rotation);
 
 //Rigidbody
     public static Vector3 CalculateForceToReachVelocity(this Rigidbody rigidbody, Vector3 targetVelocity, float deltaTime = 0.01f)
