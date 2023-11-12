@@ -8,9 +8,9 @@ public class EM : MonoBehaviour
     {
         Transform[] children = transform.GetComponentsInChildren<Transform>(true);
 
-        foreach (Transform child in children)
+        for (int i = 1; i < children.Length; i++)
         {
-            Destroy(child.gameObject);
+            Destroy(children[i].gameObject);
         }
     }
 }
