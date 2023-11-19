@@ -14,13 +14,11 @@ public class EM : MonoBehaviour
         }
     }
 
-    public static void DestroyImmediateAllChildren(Transform transform)
+    public static void DestroyImmediateAllChildren(Transform transform) //FIX
     {
-        Transform[] children = transform.GetComponentsInChildren<Transform>(true);
-
-        for (int i = 1; i < children.Length; i++)
+        while (transform.childCount > 0)
         {
-            DestroyImmediate(children[i].gameObject);
+            DestroyImmediate(transform.GetChild(0).gameObject);
         }
     }
 }
