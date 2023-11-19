@@ -127,6 +127,16 @@ public static class VectorMethods
         return false;
     }
 
+    public static Vector3 Clamp(this Vector3 vector, Vector3 min, Vector3 max)
+    {
+        Vector3 clampedVector = Vector3.zero;
+        for (int i = 0; i < 3; i++)
+        {
+            clampedVector[i] = Math.Clamp(vector[i], min[i], max[i]);
+        }
+        return clampedVector;
+    }
+
     public static Vector3 Average(this List<Vector3> list)
     {
         Vector3 average = new Vector3(0f, 0f, 0f);

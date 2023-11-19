@@ -27,6 +27,11 @@ public static class TransformMethods
         EM.DestroyAllChildren(transform);
     }
 
+    public static void DestroyImmediateAllChildren(this Transform transform)
+    {
+        EM.DestroyImmediateAllChildren(transform);
+    }
+
     public static List<Vector3> GetPositions(this List<Transform> list)
     {
         List<Vector3> positions = new List<Vector3>();
