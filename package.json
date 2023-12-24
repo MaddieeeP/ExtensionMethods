@@ -3,5 +3,8 @@
   "version": "0.0.0",
   "displayName": "Extension Methods",
   "description": "Extension Methods for C# and Unity classes and types",
-  "rootnamespace": "daydream"
+  "rootnamespace": "daydream",
+  "dependencies": {
+    "com.unity.mathematics": "2.0.0"
+  }
 }

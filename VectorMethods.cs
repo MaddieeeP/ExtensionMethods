@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.Mathematics;
 using UnityEngine;
 
 public static class VectorMethods
@@ -37,52 +39,13 @@ public static class VectorMethods
         return vector;
     }
 
-    public static Vector3 StandardizeRotation(this Vector3 rotation)
-    {
-        while (rotation.x <= -180f)
-        {
-            rotation += new Vector3(360f, 0f, 0f);
-        }
-        while (rotation.x > 180f)
-        {
-            rotation -= new Vector3(360f, 0f, 0f);
-        }
-        while (rotation.y <= -180f)
-        {
-            rotation += new Vector3(0f, 360f, 0f);
-        }
-        while (rotation.y > 180f)
-        {
-            rotation -= new Vector3(0f, 360f, 0f);
-        }
-        while (rotation.z <= -180f)
-        {
-            rotation += new Vector3(0f, 0f, 360f);
-        }
-        while (rotation.z > 180f)
-        {
-            rotation -= new Vector3(0f, 0f, 360f);
-        }
-
-        return rotation;
-    }
-
-    public static float StandardizedDistance(this Vector3 rotation, Vector3 targetRotation)
-    {
-        Vector3 difference = default(Vector3);
-        difference.x = rotation.x.StandardizedAxisDistance(targetRotation.x);
-        difference.y = rotation.y.StandardizedAxisDistance(targetRotation.y);
-        difference.z = rotation.z.StandardizedAxisDistance(targetRotation.z);
-        return difference.magnitude;
-    }
-
     public static Vector3 ComponentInDirection(this Vector3 vector, Vector3 direction)
     {
         float angle = (float)Math.Acos(Vector3.Dot(vector, direction) / vector.magnitude / direction.magnitude);
         Vector3 component = direction.normalized * vector.magnitude * (float)Math.Cos(angle);
         if (Double.IsNaN((double)component.magnitude))
         {
-            return new Vector3(0f, 0f, 0f);
+            return default;
         }
         return component;
     }
@@ -94,28 +57,27 @@ public static class VectorMethods
 
     public static Vector3 ToTransDirection(this Vector3 vector, Transform transform)
     {
-        Vector3 vectorInDirection = transform.right * vector.x + transform.up * vector.y + transform.forward * vector.z;
-        return vectorInDirection;
+        return transform.right * vector.x + transform.up * vector.y + transform.forward * vector.z;
     }
 
-    public static float AngleFrom(this Vector3 vector, Vector3 direction, bool absolute = false)
+    public static Vector3 ScaleBy(this Vector3 vector, Vector3 scale)
     {
-        float angle = (Math.Acos(Vector3.Dot(vector, direction) / vector.magnitude / direction.magnitude)).RadiansToDegrees();
-        Vector3 perpendicular = vector.RemoveComponentInDirection(direction).normalized;
-        if (!absolute && !perpendicular.IsComponentInDirectionPositive(new Vector3(1f, 1f, 1f)))
-        {
-            return 360f - angle;
-        }
+        return new Vector3(vector.x * scale.x, vector.y * scale.y, vector.z * scale.z);
+    }
 
-        return angle;
+    public static Vector3 Reciprocal(this Vector3 vector)
+    {
+        return new Vector3(1f / vector.x, 1f / vector.y, 1f / vector.z);
+    }
+
+    public static float SignedAngle(this Vector3 normal, Vector3 a, Vector3 b)
+    {
+        return Vector3.Angle(a, b) * Mathf.Sign(Vector3.Dot(normal, Vector3.Cross(a, b)));
     }
 
     public static Vector3 FlattenAgainstDirection(this Vector3 vector, Vector3 direction)
     {
-        float vectorMagnitude = vector.magnitude;
-        vector = vector.normalized;
-        vector -= vector.ComponentInDirection(direction);
-        return (vector.normalized * vectorMagnitude).StandardizeRotation();
+        return vector.magnitude * vector.RemoveComponentInDirection(direction).normalized;
     }
 
     public static bool IsComponentInDirectionPositive(this Vector3 vector, Vector3 direction)
@@ -137,6 +99,11 @@ public static class VectorMethods
         return clampedVector;
     }
 
+    public static Vector3 SetMagnitude(this Vector3 vector, float magnitude)
+    {
+        return vector.normalized * magnitude;
+    }
+
     public static Vector3 Average(this List<Vector3> list)
     {
         Vector3 average = new Vector3(0f, 0f, 0f);
@@ -146,6 +113,11 @@ public static class VectorMethods
             average += vector;
         }
         return average / list.Count;
+    }
+
+    public static float3 ToFloat3(this Vector3 vector)
+    {
+        return new float3(vector.x, vector.y, vector.z);
     }
 
     public static List<Vector3> OrderByXYArgument(this List<Vector3> list)
@@ -177,7 +149,6 @@ public static class VectorMethods
             {
                 arguments.Add(argument);
                 sortedList.Add(vector);
-
             }
         }
         return sortedList;

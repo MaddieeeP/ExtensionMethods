@@ -1,15 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.Mathematics;
 using UnityEngine;
 
 public static class FloatMethods
 {
-    public static float RadiansToDegrees(this double angle)
-    {
-        return (float)(angle / Math.PI) * 180f;
-    }
-
     public static float Squared(this float num)
     {
         return num * num;

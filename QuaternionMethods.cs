@@ -9,41 +9,73 @@ public static class QuaternionMethods
         return quaternion * Quaternion.Inverse(divisor);
     }
 
-    public static float StandardizedDistance(this Quaternion rotation, Quaternion targetRotation) => rotation.eulerAngles.StandardizedDistance(targetRotation.eulerAngles);
-
-    public static Quaternion RotationComponentAboutAxis(this Quaternion rotation, Vector3 direction)
+    public static Quaternion Negate(this Quaternion quaternion) //Same rotation, however the axis and angle are both flipped
     {
-        Vector3 rotationAxis = new Vector3(rotation.x, rotation.y, rotation.z);
+        return new Quaternion(-quaternion.x, -quaternion.y, -quaternion.z, -quaternion.w);
+    }
+
+    public static Quaternion ShortestRotation(this Quaternion rotation, Quaternion targetRotation)
+    {
+        if (Quaternion.Dot(rotation, targetRotation) < 0f)
+        {
+            return targetRotation.DivideBy(rotation.Negate());
+        }
+        return targetRotation.DivideBy(rotation);
+    }
+
+    public static Quaternion OldRotationComponentAboutAxis(this Quaternion rotation, Vector3 direction)
+    {
+        direction = direction.normalized;
+        Vector3 rotationAxis = new Vector3(rotation.x, rotation.y, rotation.z).normalized;
         float dotProd = (float)Vector3.Dot(direction, rotationAxis);
         Vector3 projection = dotProd * direction;
 
         Quaternion twist = new Quaternion(projection.x, projection.y, projection.z, rotation.w);
         if (dotProd < 0f)
         {
-            twist.x = -twist.x;
-            twist.y = -twist.y;
-            twist.z = -twist.z;
-            twist.w = -twist.w;
+            return twist.Negate();
         }
         return twist;
     }
 
-    public static int FindClosest(this Quaternion quaternion, List<Quaternion> quaternions)
+    public static Quaternion RotationComponentAboutAxis(this Quaternion rotation, Vector3 direction)
+    {
+        return Quaternion.LookRotation((rotation * Vector3.forward).RemoveComponentInDirection(direction), direction);
+    }
+
+    public static Quaternion FindClosest(this Quaternion quaternion, List<Quaternion> quaternions)
     {
         float minAngle = float.MaxValue;
+        Quaternion best = default;
 
-        int indexOfBest = 0;
-
-        for (int i = 0; i < quaternions.Count; i++)
+        foreach (Quaternion quaternionOption in quaternions)
         {
-            float angle = Vector3.Angle(quaternion * Vector3.forward, quaternions[i] * Vector3.forward);
+            float angle = Vector3.Angle(quaternion * Vector3.forward, quaternionOption * Vector3.forward);
             if (angle < minAngle)
             {
-                indexOfBest = i;
+                best = quaternionOption;
                 minAngle = angle;
             }
         }
 
-        return indexOfBest;
+        return best;
+    }
+
+    public static List<Quaternion> GetRotationsAroundAxis(this Quaternion quaternion, Vector3 axis, int rotationCount, bool clockwise = true)
+    {
+        List<Quaternion> rotations = new List<Quaternion>();
+        float rotationAngle = 360f / rotationCount;
+        
+        if (!clockwise)
+        {
+            rotationAngle = -rotationAngle;
+        }
+
+        for (int i = 0; i < rotationCount; i++) 
+        {
+            rotations.Add(quaternion * Quaternion.AngleAxis(rotationAngle * i, axis));
+        }
+
+        return rotations;
     }
 }
