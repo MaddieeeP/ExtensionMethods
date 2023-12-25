@@ -5,6 +5,6 @@
   "description": "Extension Methods for C# and Unity classes and types",
   "rootnamespace": "daydream",
   "dependencies": {
-    "com.unity.mathematics": "2.0.0"
+    "com.unity.mathematics": "1.2.6"
   }
 }
