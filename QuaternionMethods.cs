@@ -40,7 +40,7 @@ public static class QuaternionMethods
 
     public static Quaternion RotationComponentAboutAxis(this Quaternion rotation, Vector3 direction)
     {
-        return Quaternion.LookRotation((rotation * Vector3.forward).RemoveComponentInDirection(direction), direction);
+        return Quaternion.LookRotation((rotation * Vector3.forward).RemoveComponentAlongAxis(direction), direction);
     }
 
     public static Quaternion FindClosest(this Quaternion quaternion, List<Quaternion> quaternions)

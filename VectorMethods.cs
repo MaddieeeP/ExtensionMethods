@@ -39,10 +39,10 @@ public static class VectorMethods
         return vector;
     }
 
-    public static Vector3 ComponentInDirection(this Vector3 vector, Vector3 direction)
+    public static Vector3 ComponentAlongAxis(this Vector3 vector, Vector3 axis)
     {
-        float angle = (float)Math.Acos(Vector3.Dot(vector, direction) / vector.magnitude / direction.magnitude);
-        Vector3 component = direction.normalized * vector.magnitude * (float)Math.Cos(angle);
+        float angle = (float)Math.Acos(Vector3.Dot(vector, axis) / vector.magnitude / axis.magnitude);
+        Vector3 component = axis.normalized * vector.magnitude * (float)Math.Cos(angle);
         if (Double.IsNaN((double)component.magnitude))
         {
             return default;
@@ -50,14 +50,24 @@ public static class VectorMethods
         return component;
     }
 
-    public static Vector3 RemoveComponentInDirection(this Vector3 vector, Vector3 direction)
+    public static Vector3 RemoveComponentAlongAxis(this Vector3 vector, Vector3 axis)
     {
-        return vector - vector.ComponentInDirection(direction);
+        return vector - vector.ComponentAlongAxis(axis);
     }
 
-    public static Vector3 ToTransDirection(this Vector3 vector, Transform transform)
+    public static Vector3 FlattenAgainstAxis(this Vector3 vector, Vector3 axis)
     {
-        return transform.right * vector.x + transform.up * vector.y + transform.forward * vector.z;
+        return vector.magnitude * vector.RemoveComponentAlongAxis(axis).normalized;
+    }
+
+    public static float SignedMagnitudeInDirection(this Vector3 vector, Vector3 direction)
+    {
+        Vector3 component = vector.ComponentAlongAxis(direction);
+        if (component.normalized == direction.normalized)
+        {
+            return component.magnitude;
+        }
+        return -component.magnitude;
     }
 
     public static Vector3 ScaleBy(this Vector3 vector, Vector3 scale)
@@ -75,14 +85,9 @@ public static class VectorMethods
         return Vector3.Angle(a, b) * Mathf.Sign(Vector3.Dot(normal, Vector3.Cross(a, b)));
     }
 
-    public static Vector3 FlattenAgainstDirection(this Vector3 vector, Vector3 direction)
-    {
-        return vector.magnitude * vector.RemoveComponentInDirection(direction).normalized;
-    }
-
     public static bool IsComponentInDirectionPositive(this Vector3 vector, Vector3 direction)
     {
-        if (vector.ComponentInDirection(direction).normalized == direction.normalized)
+        if (vector.ComponentAlongAxis(direction).normalized == direction.normalized)
         {
             return true;
         }
@@ -113,11 +118,6 @@ public static class VectorMethods
             average += vector;
         }
         return average / list.Count;
-    }
-
-    public static float3 ToFloat3(this Vector3 vector)
-    {
-        return new float3(vector.x, vector.y, vector.z);
     }
 
     public static List<Vector3> OrderByXYArgument(this List<Vector3> list)
@@ -152,5 +152,10 @@ public static class VectorMethods
             }
         }
         return sortedList;
+    }
+
+    public static float3 ToFloat3(this Vector3 vector)
+    {
+        return new float3(vector.x, vector.y, vector.z);
     }
 }
