@@ -94,15 +94,17 @@ public static class VectorMethods
         return false;
     }
 
-    public static Vector3 Clamp(this Vector3 vector, Vector3 min, Vector3 max)
+    public static Vector3 ClampInBounds(this Vector3 vector, Vector3 a, Vector3 b)
     {
-        Vector3 clampedVector = Vector3.zero;
+        Vector3 clampedVector = default;
         for (int i = 0; i < 3; i++)
         {
-            clampedVector[i] = Math.Clamp(vector[i], min[i], max[i]);
+            clampedVector[i] = Math.Clamp(vector[i], Math.Min(a[i], b[i]), Math.Max(a[i], b[i]));
         }
         return clampedVector;
     }
+
+    public static Vector3 ClampInBounds(this Vector3 vector, Bounds bounds) => vector.ClampInBounds(bounds.min, bounds.max);
 
     public static Vector3 SetMagnitude(this Vector3 vector, float magnitude)
     {
