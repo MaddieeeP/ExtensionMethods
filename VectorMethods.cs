@@ -11,43 +11,29 @@ public static class VectorMethods
     {
         if (index == 0)
         {
-            vector = new Vector2(value, vector.y);
-        }
-        else
-        {
-            vector = new Vector2(vector.x, value);
+            return new Vector2(value, vector.y);
         }
 
-        return vector;
+        return new Vector2(vector.x, value);
     }
 
     public static Vector3 ChangeValue(this Vector3 vector, int index, float value)
     {
         if (index == 0)
         {
-            vector = new Vector3(value, vector.y, vector.z);
+            return new Vector3(value, vector.y, vector.z);
         }
-        else if (index == 1)
+        if (index == 1)
         {
-            vector = new Vector3(vector.x, value, vector.z);
-        }
-        else
-        {
-            vector = new Vector3(vector.x, vector.y, value);
+            return new Vector3(vector.x, value, vector.z);
         }
 
-        return vector;
+        return new Vector3(vector.x, vector.y, value);
     }
 
     public static Vector3 ComponentAlongAxis(this Vector3 vector, Vector3 axis)
     {
-        float angle = (float)Math.Acos(Vector3.Dot(vector, axis) / vector.magnitude / axis.magnitude);
-        Vector3 component = axis.normalized * vector.magnitude * (float)Math.Cos(angle);
-        if (Double.IsNaN((double)component.magnitude))
-        {
-            return default;
-        }
-        return component;
+        return axis.normalized * Vector3.Dot(vector, axis.normalized);
     }
 
     public static Vector3 RemoveComponentAlongAxis(this Vector3 vector, Vector3 axis)
@@ -62,12 +48,29 @@ public static class VectorMethods
 
     public static float SignedMagnitudeInDirection(this Vector3 vector, Vector3 direction)
     {
-        Vector3 component = vector.ComponentAlongAxis(direction);
-        if (component.normalized == direction.normalized)
+        return Vector3.Dot(vector, direction.normalized);
+    }
+
+    public static Vector3 ClampRelativeChange(this Vector3 vector, Vector3 relativeVector, float increaseMax, float decreaseMax, out Vector3 vectorPerpendicular)
+    {
+        if (relativeVector == Vector3.zero) //relativeVector has no meaningful direction
         {
-            return component.magnitude;
+            vectorPerpendicular = default;
+            return Vector3.ClampMagnitude(vector, increaseMax);
         }
-        return -component.magnitude;
+
+        Vector3 vectorParallel = vector.ComponentAlongAxis(relativeVector);
+        vectorPerpendicular = vector - vectorParallel;
+
+        if (vectorParallel.SignedMagnitudeInDirection(relativeVector) > 0f) //vectorParallel is in same direction as relativeVector
+        {
+            return Vector3.ClampMagnitude(vectorParallel, increaseMax);
+        }
+        
+        Vector3 decreaseVector = vectorParallel.normalized * Math.Min(relativeVector.magnitude, vectorParallel.magnitude);
+        Vector3 increaseVector = vectorParallel - decreaseVector; //will always have signedMagnitudeInDirection(vectorParallel) >= 0
+
+        return Vector3.ClampMagnitude(decreaseVector, decreaseMax) + Vector3.ClampMagnitude(increaseVector, increaseMax);
     }
 
     public static Vector3 ScaleBy(this Vector3 vector, Vector3 scale)
@@ -87,11 +90,7 @@ public static class VectorMethods
 
     public static bool IsComponentInDirectionPositive(this Vector3 vector, Vector3 direction)
     {
-        if (vector.ComponentAlongAxis(direction).normalized == direction.normalized)
-        {
-            return true;
-        }
-        return false;
+        return vector.SignedMagnitudeInDirection(direction) > 0f;
     }
 
     public static Vector3 ClampInBounds(this Vector3 vector, Vector3 a, Vector3 b)
@@ -101,10 +100,24 @@ public static class VectorMethods
         {
             clampedVector[i] = Math.Clamp(vector[i], Math.Min(a[i], b[i]), Math.Max(a[i], b[i]));
         }
+
         return clampedVector;
     }
 
     public static Vector3 ClampInBounds(this Vector3 vector, Bounds bounds) => vector.ClampInBounds(bounds.min, bounds.max);
+
+    public static Vector3 ClampInDirection(this Vector3 vector, Vector3 clampVector, out Vector3 vectorPerpendicular)
+    { 
+        Vector3 vectorParallel = vector.ComponentAlongAxis(clampVector);
+        vectorPerpendicular = vector - vectorParallel;
+
+        if (vectorParallel.SignedMagnitudeInDirection(clampVector) > 0f)
+        {
+            return Vector3.ClampMagnitude(vectorParallel, clampVector.magnitude);
+        }
+
+        return vectorParallel;
+    }
 
     public static Vector3 SetMagnitude(this Vector3 vector, float magnitude)
     {
@@ -119,6 +132,7 @@ public static class VectorMethods
         {
             average += vector;
         }
+
         return average / list.Count;
     }
 
@@ -153,6 +167,7 @@ public static class VectorMethods
                 sortedList.Add(vector);
             }
         }
+
         return sortedList;
     }
 
