@@ -171,6 +171,51 @@ public static class VectorMethods
         return sortedList;
     }
 
+    public static bool FacingDirection(this Vector3 forward, Vector3 direction, Vector3 up, float maxViewDegreesX = 90f, float maxViewDegreesY = 90f)
+    {
+        forward = forward.normalized;
+        direction = direction.normalized;
+        up = up.normalized;
+
+        float xDegrees = Vector3.Angle(direction.RemoveComponentAlongAxis(up), forward);
+        float yDegrees = Vector3.Angle(direction.RemoveComponentAlongAxis(up), direction);
+
+        if (xDegrees > maxViewDegreesX || yDegrees > maxViewDegreesY)
+        {
+            xDegrees = 180f - xDegrees;
+            yDegrees = 180f - yDegrees;
+        }
+
+        if (xDegrees <= maxViewDegreesX && yDegrees <= maxViewDegreesY)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static float LineOfSight(this Vector3 forward, Vector3 position, Vector3 direction, Vector3 up, List<Transform> ignoreTransforms, float maxDistance = Mathf.Infinity, float maxViewDegreesX = 90f, float maxViewDegreesY = 90f, int layerMask = Physics.DefaultRaycastLayers, QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.Ignore)
+    {
+        if (!forward.FacingDirection(direction, up, maxViewDegreesX, maxViewDegreesY))
+        {
+            return -1f;
+        }
+
+        RaycastHit[] hits = Physics.RaycastAll(position, direction.normalized, maxDistance, layerMask, queryTriggerInteraction);
+        hits = hits.OrderBy(hit => hit.distance).ToArray();
+
+        foreach (RaycastHit hit in hits)
+        {
+            if (ignoreTransforms.Contains(hit.transform))
+            {
+                continue;
+            }
+
+            return hit.distance;
+        }
+        return maxDistance;
+    }
+
     public static float3 ToFloat3(this Vector3 vector)
     {
         return new float3(vector.x, vector.y, vector.z);

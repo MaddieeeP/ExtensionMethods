@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public static class TransformMethods
@@ -131,5 +133,7 @@ public static class TransformMethods
         bounds.SetMinMax(min, max);
 
         return bounds;
-    } 
+    }
+
+    public static float LineOfSight(this Transform transform, Vector3 direction, List<Transform> ignoreTransforms, float maxDistance = Mathf.Infinity, float maxViewDegreesX = 90f, float maxViewDegreesY = 90f, int layerMask = Physics.DefaultRaycastLayers, QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.Ignore) => transform.forward.LineOfSight(transform.position, direction, transform.up, ignoreTransforms, maxDistance, maxViewDegreesX, maxViewDegreesY, layerMask, queryTriggerInteraction);
 }
