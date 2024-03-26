@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class ExtensionMethods
+public static class ListMethods
 {
     public static void Move<T>(this List<T> list, int oldIndex, int newIndex)
     {
