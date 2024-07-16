@@ -51,28 +51,6 @@ public static class VectorMethods
         return Vector3.Dot(vector, direction.normalized);
     }
 
-    public static Vector3 ClampRelativeChange(this Vector3 vector, Vector3 relativeVector, float increaseMax, float decreaseMax, out Vector3 vectorPerpendicular)
-    {
-        if (relativeVector == Vector3.zero) //relativeVector has no meaningful direction
-        {
-            vectorPerpendicular = default;
-            return Vector3.ClampMagnitude(vector, increaseMax);
-        }
-
-        Vector3 vectorParallel = vector.ComponentAlongAxis(relativeVector);
-        vectorPerpendicular = vector - vectorParallel;
-
-        if (vectorParallel.SignedMagnitudeInDirection(relativeVector) > 0f) //vectorParallel is in same direction as relativeVector
-        {
-            return Vector3.ClampMagnitude(vectorParallel, increaseMax);
-        }
-        
-        Vector3 decreaseVector = vectorParallel.normalized * Math.Min(relativeVector.magnitude, vectorParallel.magnitude);
-        Vector3 increaseVector = vectorParallel - decreaseVector; //will always have signedMagnitudeInDirection(vectorParallel) >= 0
-
-        return Vector3.ClampMagnitude(decreaseVector, decreaseMax) + Vector3.ClampMagnitude(increaseVector, increaseMax);
-    }
-
     public static Vector3 ScaleBy(this Vector3 vector, Vector3 scale)
     {
         return new Vector3(vector.x * scale.x, vector.y * scale.y, vector.z * scale.z);
