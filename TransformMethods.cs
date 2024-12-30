@@ -24,6 +24,12 @@ public static class TransformMethods
         return distance;
     }
 
+    public static void SetScale(this Transform transform, Vector3 scale)
+    {
+        transform.localScale = Vector3.one; //reset local scale so that lossyScale represents the parent's scale (or default scale if parent is null)
+        transform.localScale = new Vector3(scale.x / transform.lossyScale.x, scale.y / transform.lossyScale.y, scale.z / transform.lossyScale.z);
+    }
+
     public static void DestroyAllChildren(this Transform transform)
     {
         EM.DestroyAllChildren(transform);
@@ -82,7 +88,7 @@ public static class TransformMethods
         return bounds;
     }
 
-    public static Bounds GetBoundsWithChildren(this RectTransform element, List<GameObject> ignoreObjects, Quaternion relativeRotation)
+    public static Bounds GetBoundsWithChildren(this RectTransform element, List<GameObject> ignoreObjects, Quaternion relativeRotation, string ignoreString = "IGNOREBOUNDS")
     {
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;
@@ -102,7 +108,7 @@ public static class TransformMethods
 
         foreach (RectTransform child in element.GetComponentsInChildren<RectTransform>())
         {
-            if (child.gameObject.name.StartsWith("IGNOREBOUNDS") || ignoreObjects.Contains(child.gameObject))
+            if (child.gameObject.name.Contains(ignoreString) || ignoreObjects.Contains(child.gameObject))
             {
                 continue;
             }
