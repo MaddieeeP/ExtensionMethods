@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EM : MonoBehaviour
@@ -8,17 +6,19 @@ public class EM : MonoBehaviour
     {
         Transform[] children = transform.GetComponentsInChildren<Transform>(true);
 
-        for (int i = 1; i < children.Length; i++)
+        for (int i = children.Length - 1; i >= 0; i--)
         {
             Destroy(children[i].gameObject);
         }
     }
 
-    public static void DestroyImmediateAllChildren(Transform transform) //FIX
+    public static void DestroyImmediateAllChildren(Transform transform) //FIX - test
     {
-        while (transform.childCount > 0)
+        Transform[] children = transform.GetComponentsInChildren<Transform>(true);
+
+        for (int i = children.Length - 1; i >= 0; i--)
         {
-            DestroyImmediate(transform.GetChild(0).gameObject);
+            DestroyImmediate(children[i].gameObject);
         }
     }
 }

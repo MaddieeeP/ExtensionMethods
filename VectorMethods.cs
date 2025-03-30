@@ -85,7 +85,7 @@ public static class VectorMethods
     public static Vector3 ClampInBounds(this Vector3 vector, Bounds bounds) => vector.ClampInBounds(bounds.min, bounds.max);
 
     public static Vector3 ClampInDirection(this Vector3 vector, Vector3 clampVector, out Vector3 vectorPerpendicular)
-    { 
+    {
         Vector3 vectorParallel = vector.ComponentAlongAxis(clampVector);
         vectorPerpendicular = vector - vectorParallel;
 
@@ -172,14 +172,18 @@ public static class VectorMethods
         return false;
     }
 
-    public static float LineOfSight(this Vector3 forward, Vector3 position, Vector3 direction, Vector3 up, List<Transform> ignoreTransforms, float maxDistance = Mathf.Infinity, float maxViewDegreesX = 90f, float maxViewDegreesY = 90f, int layerMask = Physics.DefaultRaycastLayers, QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.Ignore)
+    public static bool CanBeSeen(this Vector3 target, Vector3 position, Vector3 forward, Vector3 up, List<Transform> ignoreTransforms, float maxViewDegreesX = 90f, float maxViewDegreesY = 90f, float maxDistance = float.PositiveInfinity, int layerMask = Physics.DefaultRaycastLayers, QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.Ignore)
     {
-        if (!forward.FacingDirection(direction, up, maxViewDegreesX, maxViewDegreesY))
+        Vector3 positionToTarget = target - position;
+        Vector3 direction = positionToTarget.normalized;
+        float distance = positionToTarget.magnitude;
+
+        if (distance > maxDistance || !forward.FacingDirection(direction, up, maxViewDegreesX, maxViewDegreesY))
         {
-            return -1f;
+            return false;
         }
 
-        RaycastHit[] hits = Physics.RaycastAll(position, direction.normalized, maxDistance, layerMask, queryTriggerInteraction);
+        RaycastHit[] hits = Physics.RaycastAll(position, direction, distance, layerMask, queryTriggerInteraction);
         hits = hits.OrderBy(hit => hit.distance).ToArray();
 
         foreach (RaycastHit hit in hits)
@@ -189,13 +193,30 @@ public static class VectorMethods
                 continue;
             }
 
-            return hit.distance;
+            return false;
         }
-        return maxDistance;
+        return true;
     }
 
     public static float3 ToFloat3(this Vector3 vector)
     {
         return new float3(vector.x, vector.y, vector.z);
+    }
+
+    public static Vector3 GetBarycentricCoordinate(this Vector3 point, Vector3 vertex1, Vector3 vertex2, Vector3 vertex3)
+    {
+        float3x3 equationMatrix = new float3x3(vertex1.x, vertex1.y, vertex1.z, vertex2.x, vertex2.y, vertex2.z, vertex3.x, vertex3.y, vertex3.z);
+
+        return equationMatrix.SolveLinearEquations(point);
+    }
+
+    public static bool IsValidBarycentricCoordinate(this Vector3 barycentricCoordinate)
+    {
+        return barycentricCoordinate.x >= 0f && barycentricCoordinate.y >= 0f && barycentricCoordinate.z >= 0f && barycentricCoordinate.x + barycentricCoordinate.y + barycentricCoordinate.z == 1f;
+    }
+
+    public static Vector3 PointOnTriangle(this Vector3 barycentricCoordinate, Vector3 vertex1, Vector3 vertex2, Vector3 vertex3)
+    {
+        return vertex1 * barycentricCoordinate.x + vertex2 * barycentricCoordinate.y + vertex3 * barycentricCoordinate.z;
     }
 }

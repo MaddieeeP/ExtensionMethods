@@ -140,6 +140,4 @@ public static class TransformMethods
 
         return bounds;
     }
-
-    public static float LineOfSight(this Transform transform, Vector3 direction, List<Transform> ignoreTransforms, float maxDistance = Mathf.Infinity, float maxViewDegreesX = 90f, float maxViewDegreesY = 90f, int layerMask = Physics.DefaultRaycastLayers, QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.Ignore) => transform.forward.LineOfSight(transform.position, direction, transform.up, ignoreTransforms, maxDistance, maxViewDegreesX, maxViewDegreesY, layerMask, queryTriggerInteraction);
 }
