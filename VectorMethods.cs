@@ -71,12 +71,12 @@ public static class VectorMethods
         return vector.SignedMagnitudeInDirection(direction) > 0f;
     }
 
-    public static Vector3 ClampInBounds(this Vector3 vector, Vector3 a, Vector3 b)
+    public static Vector3 ClampInBounds(this Vector3 vector, Vector3 min, Vector3 max)
     {
         Vector3 clampedVector = default;
         for (int i = 0; i < 3; i++)
         {
-            clampedVector[i] = Math.Clamp(vector[i], Math.Min(a[i], b[i]), Math.Max(a[i], b[i]));
+            clampedVector[i] = Math.Clamp(vector[i], min[i], max[i]);
         }
 
         return clampedVector;
@@ -84,17 +84,20 @@ public static class VectorMethods
 
     public static Vector3 ClampInBounds(this Vector3 vector, Bounds bounds) => vector.ClampInBounds(bounds.min, bounds.max);
 
-    public static Vector3 ClampInDirection(this Vector3 vector, Vector3 clampVector, out Vector3 vectorPerpendicular)
+    public static Vector3 GetClosestPointOnLine(this Vector3 point, Vector3 direction, Vector3 linePoint)
     {
-        Vector3 vectorParallel = vector.ComponentAlongAxis(clampVector);
-        vectorPerpendicular = vector - vectorParallel;
+        direction.Normalize();
+        var transformedPoint = point - linePoint;
+        var t = Vector3.Dot(transformedPoint, direction);
+        return linePoint + direction * t;
+    }
 
-        if (vectorParallel.SignedMagnitudeInDirection(clampVector) > 0f)
-        {
-            return Vector3.ClampMagnitude(vectorParallel, clampVector.magnitude);
-        }
-
-        return vectorParallel;
+    public static Vector3 GetClosestPointOnLineSegment(this Vector3 point, Vector3 linePoint1, Vector3 linePoint2)
+    {
+        Vector3 direction = (linePoint2 - linePoint1).normalized;
+        var transformedPoint = point - linePoint1;
+        var t = Mathf.Clamp(Vector3.Dot(transformedPoint, direction), 0f, Vector3.Distance(linePoint1, linePoint2));
+        return linePoint1 + direction * t;
     }
 
     public static Vector3 SetMagnitude(this Vector3 vector, float magnitude)
